@@ -6,11 +6,11 @@ class Segment {
     private Point a;
     private Point b;
 
-    Point getA() {
+    Point getHead() {
         return a;
     }
 
-    Point getB() {
+    Point getTail() {
         return b;
     }
 
@@ -25,7 +25,7 @@ class Segment {
     }
 
     // Returns crossing point of the lines. Note: not segments.
-    Point getCPoint(Segment s2) {
+    Point getCrossingPoint(Segment s2) {
 
         double a1 = this.b.getY() - this.a.getY();
         double b1 = this.a.getX() - this.b.getX();
@@ -44,15 +44,15 @@ class Segment {
 
     //Checks if segment is crossed with specified one.
     boolean isCrossed(Segment s2) {
-        double c = (this.b.getX() - this.a.getX()) * (s2.getB().getY() - s2.getA().getY()) -
-                (this.getB().getY() - this.a.getY()) * (s2.getB().getX() - s2.getA().getX());
+        double c = (this.b.getX() - this.a.getX()) * (s2.getTail().getY() - s2.getHead().getY()) -
+                (this.getTail().getY() - this.a.getY()) * (s2.getTail().getX() - s2.getHead().getX());
 
         if (c == 0) return false;
 
-        double a1 = (this.a.getY() - s2.getA().getY()) * (s2.getB().getX() - s2.getA().getX()) -
-                (this.a.getX() - s2.getA().getX()) * (s2.getB().getY() - s2.getA().getY());
-        double a2 = (this.a.getY() - s2.getA().getY()) * (this.b.getX() - this.a.getX()) -
-                (this.a.getX() - s2.getA().getX()) * (this.getB().getY() - this.a.getY());
+        double a1 = (this.a.getY() - s2.getHead().getY()) * (s2.getTail().getX() - s2.getHead().getX()) -
+                (this.a.getX() - s2.getHead().getX()) * (s2.getTail().getY() - s2.getHead().getY());
+        double a2 = (this.a.getY() - s2.getHead().getY()) * (this.b.getX() - this.a.getX()) -
+                (this.a.getX() - s2.getHead().getX()) * (this.getTail().getY() - this.a.getY());
 
         double b1 = a1 / c;
         double b2 = a2 / c;
@@ -60,8 +60,8 @@ class Segment {
         return b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1;
     }
 
-    //Returns maximum possible distance from (0,0) to the segment
-    double getMaxR() {
+    //Returns maximum possible distance (R) from (0,0) to the segment
+    double getMaxDistance() {
         if (this.a.getR() > this.b.getR()) {
             return this.a.getR();
         } else return this.b.getR();

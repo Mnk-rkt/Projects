@@ -6,9 +6,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-
         Scanner sc = new Scanner(System.in);
-
         // ArrayList Segments will store all Segments.
         ArrayList<Segment> Segments = new ArrayList<Segment>();
         double x1;
@@ -20,9 +18,18 @@ public class Main {
         Segment s;
         Point cam = new Point(0, 0);
         int crossingCounter = 0;
-        boolean c = true;
-        while (c) {
+        int numberOfSegments = 0;
+        System.out.println("Please input number of segments:");
 
+        while (numberOfSegments == 0) {
+            if (sc.hasNextDouble()) {
+                numberOfSegments = sc.nextInt();
+            }
+        }
+        System.out.println(numberOfSegments);
+        int i = 0;
+        while (i < numberOfSegments) {
+            i++;
             // Input for point coordinates. Each cycle will repeat until valid number is typed.
             // Input method can be changed as long as ArrayList Segments is completed.
             System.out.print("Please enter coordinates one by one\n");
@@ -41,7 +48,7 @@ public class Main {
                 }
             }
             while (true) {
-                System.out.println("X1: \n");
+                System.out.println("X2: \n");
                 if (sc.hasNextDouble()) {
                     x2 = sc.nextDouble();
                     break;
@@ -54,90 +61,62 @@ public class Main {
                     break;
                 }
             }
-
             //Filling ArrayList Segments
             a = new Point(x1, y1);
             b = new Point(x2, y2);
-            if ((a.getX() == 0 && a.getY() == 0) || (b.getY() == 0 && b.getX() == 0)) {
-                System.out.println("Point is in the way, I can't see anything.");
+            s = new Segment(a, b);
+            if (!s.isAPoint()) {
+                Segments.add(s);
             } else {
-                s = new Segment(a, b);
-                if (!s.isAPoint()) {
-                    Segments.add(s);
-                } else {
-                    System.out.println("Please enter valid coordinates. This segment is a point.\n");
-                }
-            }
-
-            // Запрашиваем подтверждение на продолжение ввода. Цикл повторяется, пока не будет введен "y" или "n".
-            start:
-            while (c) {
-                System.out.println("Is this the last segment? y/n \n");
-                switch (sc.next()) {
-                    case "y":
-                        c = false;
-                        break;
-                    case "n":
-                        System.out.println("Please enter coordinates of the next segment.");
-                        break start;
-                }
+                System.out.println("Please enter valid coordinates. This segment is a point.\n");
             }
         }
 
-
-        try {
-            //Creating test beams (technically, segments) from camera to marked points
-            // Each segment will produce four beams.
-            ArrayList<Segment> beams = new ArrayList<Segment>();
-            double globalR = Segments.get(Segments.size() - 1).getMaxR() + 1;
-            for (int i = 0; i < Segments.size(); i++) {
-                Point m1 = new Point(Segments.get(i).getA().getX(), Segments.get(i).getA().getY()).markLeft(globalR);
-                Point m2 = new Point(Segments.get(i).getB().getX(), Segments.get(i).getB().getY()).markLeft(globalR);
-                Point m3 = new Point(Segments.get(i).getA().getX(), Segments.get(i).getA().getY()).markRight(globalR);
-                Point m4 = new Point(Segments.get(i).getB().getX(), Segments.get(i).getB().getY()).markRight(globalR);
-                beams.add(new Segment(cam, m1));
-                beams.add(new Segment(cam, m2));
-                beams.add(new Segment(cam, m3));
-                beams.add(new Segment(cam, m4));
-            }
-            //testPoint is used to create new temporary segments.
-            Point testPoint = new Point(globalR + 1, globalR + 1);
-
-            for (int z = 0; z < beams.size(); z++) {
-                // Resets testPoint after each iteration
-                testPoint.setX(globalR + 1);
-                testPoint.setY(globalR + 1);
-                for (int e = 0; e < Segments.size(); e++) {
-                    //Tests for the beam crossing each segment. If crossing point is closer than the previous one,
-                    // testPoint is updated
-                    if (beams.get(z).isCrossed(Segments.get(e)) && testPoint.getR() >=
-                            beams.get(z).getCPoint(Segments.get(e)).getR()) {
-                        testPoint = beams.get(z).getCPoint(Segments.get(e));
-                    }
-                }// After finding closest crossing point checks if the beam is crossed with target segment.
-                Segment testSegment = new Segment(cam, testPoint);
-                if (testSegment.isCrossed(Segments.get(Segments.size() - 1)) && testPoint.getX() != (globalR + 1) && testPoint.getY() != globalR + 1) {
-                    crossingCounter++;
+        Segment redSegment = Segments.get(Segments.size() - 1);
+        // viewDistance is used to limit maximum beam length
+        // viewDistanceIncrement is used to guarantee that the red segment is within viewDistance in rare corner cases
+        double viewDistanceIncrement = 1;
+        double viewDistance = redSegment.getMaxDistance() + viewDistanceIncrement;
+        // Creating test beams (technically, segments) from camera to marked points
+        // Each segment will produce four beams.
+        ArrayList<Segment> beams = new ArrayList<Segment>();
+        for (com.company.Segment Segment : Segments) {
+            Point m1 = new Point(Segment.getHead().getX(), Segment.getHead().getY()).markLeft(viewDistance);
+            Point m2 = new Point(Segment.getTail().getX(), Segment.getTail().getY()).markLeft(viewDistance);
+            Point m3 = new Point(Segment.getHead().getX(), Segment.getHead().getY()).markRight(viewDistance);
+            Point m4 = new Point(Segment.getTail().getX(), Segment.getTail().getY()).markRight(viewDistance);
+            beams.add(new Segment(cam, m1));
+            beams.add(new Segment(cam, m2));
+            beams.add(new Segment(cam, m3));
+            beams.add(new Segment(cam, m4));
+        }
+        // dummy point is used to reset testPoint.
+        // Is farther away than red segment by default.
+        Point dummy = new Point(viewDistance, viewDistance);
+        Point testPoint = dummy;
+        for (Segment beam : beams) {
+            for (Segment Segment : Segments) {
+                //Tests for the beam crossing each segment. If crossing point is closer than the previous one,
+                // testPoint is updated
+                if (beam.isCrossed(Segment) && testPoint.getR() >= beam.getCrossingPoint(Segment).getR()) {
+                    testPoint = beam.getCrossingPoint(Segment);
                 }
             }
-            System.out.println("Crossings found: " + crossingCounter);
-            if (crossingCounter > 0) {
-                System.out.println("Target segment is visible");
-            } else {
-                System.out.println("Target segment is not visible");
+            // After finding closest crossing point checks if the beam is crossed with red segment
+            // and dummy point is not default.
+            Segment testSegment = new Segment(cam, testPoint);
+            if (testSegment.isCrossed(redSegment) && testPoint != dummy) {
+                crossingCounter++;
             }
-
+            // Resets testPoint after each iteration
+            testPoint = dummy;
         }
-
-        // Обрабатываем случай отсутствия данных.
-        catch (IndexOutOfBoundsException e) {
-            System.out.println("Segments list is empty");
+        if (crossingCounter > 0) {
+            System.out.println("Red segment is visible");
+        } else {
+            System.out.println("Red segment is not visible");
         }
-
-
     }
-
-
 }
 
 
