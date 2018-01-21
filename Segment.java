@@ -24,7 +24,8 @@ class Segment {
         return this.a.getX() == this.b.getX() && this.a.getY() == this.b.getY();
     }
 
-    // Returns crossing point of the lines. Note: not segments.
+    // Returns crossing point of the lines.
+    // Note: not segments.
     Point getCrossingPoint(Segment s2) {
 
         double a1 = this.b.getY() - this.a.getY();
@@ -42,7 +43,7 @@ class Segment {
         return new Point(x, y);
     }
 
-    //Checks if segment is crossed with specified one.
+    // Checks if segment is crossed with specified one.
     boolean isCrossed(Segment s2) {
         double c = (this.b.getX() - this.a.getX()) * (s2.getTail().getY() - s2.getHead().getY()) -
                 (this.getTail().getY() - this.a.getY()) * (s2.getTail().getX() - s2.getHead().getX());
@@ -60,7 +61,7 @@ class Segment {
         return b1 >= 0 && b1 <= 1 && b2 >= 0 && b2 <= 1;
     }
 
-    //Returns maximum possible distance (R) from (0,0) to the segment
+    // Returns maximum possible distance (r) from (0,0) to the segment
     double getMaxDistance() {
         if (this.a.getR() > this.b.getR()) {
             return this.a.getR();

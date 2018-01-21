@@ -5,7 +5,6 @@ import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
-// определяем класс точки, его основные характеристики
  class Point {
 
     private final double y;
@@ -51,4 +50,3 @@ import static java.lang.Math.sin;
         return new Point(x, y);
     }
 }
-
